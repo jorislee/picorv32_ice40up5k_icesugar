@@ -1,4 +1,4 @@
-# ---- iCE40 UltraPlus Breakout  Board ----
+# ---- iCE40 UltraPlus icesugar  Board ----
 
 icebsim: icesugar_tb.vvp icesugar_fw.hex
 	vvp -N $< +firmware=icesugar_fw.hex
@@ -25,10 +25,19 @@ icesugar.bin: icesugar.asc
 	icetime -d up5k -c 12 -mtr icesugar.rpt icesugar.asc
 	icepack icesugar.asc icesugar.bin
 
+UNAME_S := $(shell uname -s)
+icesprog_sys: 
+ifeq ($(UNAME_S),Darwin)
+    PROG = ./tools/macos/icesprog
+endif
+ifeq ($(UNAME_S),Linux)
+    PROG = ./tools/linux/icesprog
+endif
+
 icesprog: icesugar.bin icesugar_fw.bin
 	@echo  "icesprog"
-	icesprog icesugar.bin
-	icesprog -o 0x100000 icesugar_fw.bin
+	$(PROG) icesugar.bin
+	$(PROG) -o 0x100000 icesugar_fw.bin
 	@#truncate -s 1048576 icesugar.bin
 	@#@cat icesugar.bin icesugar_fw.bin > icesugar_spiflash.bin
 	@#if [ -d '$(ICELINK_DIR)' ]; \
